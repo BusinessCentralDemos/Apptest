@@ -57,10 +57,11 @@ jobs:
 
       - name: Manual get token
         env:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          clientId: ${{ vars.APP_ID }}
+          privateKey: ${{ secrets.APP_PRIVATE_KEY }}
         run: |
-          $client_id = "$env:app-id"
+          $clientId = $env:clientId
+          $privateKey = $env:privateKey
           $header = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -InputObject @{
             alg = "RS256"
             typ = "JWT"
@@ -71,7 +72,7 @@ jobs:
             iss = $client_id
           }))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
           $rsa = [System.Security.Cryptography.RSA]::Create()
-          $rsa.ImportFromPem("$env:private-key".Trim())
+          $rsa.ImportFromPem($privateKey)
           $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
           $jwt = "$header.$payload.$signature"
           Write-Host $jwt
