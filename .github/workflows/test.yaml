@@ -46,7 +46,7 @@ jobs:
         id: generate-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: 1060271
+          app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
   
       - name: Use the token
@@ -54,3 +54,24 @@ jobs:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           Write-Host "$ENV:GH_TOKEN".Length
+
+      - name: Manual get token
+        env:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+        run: |
+          $client_id = "$env:app-id"
+          $header = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -InputObject @{
+            alg = "RS256"
+            typ = "JWT"
+          }))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+          $payload = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -InputObject @{
+            iat = [System.DateTimeOffset]::UtcNow.AddSeconds(-10).ToUnixTimeSeconds()
+            exp = [System.DateTimeOffset]::UtcNow.AddMinutes(10).ToUnixTimeSeconds()
+            iss = $client_id
+          }))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+          $rsa = [System.Security.Cryptography.RSA]::Create()
+          $rsa.ImportFromPem($env:private-key)
+          $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+          $jwt = "$header.$payload.$signature"
+          Write-Host $jwt
