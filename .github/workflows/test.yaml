@@ -76,7 +76,7 @@ jobs:
           $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
           $jwt = "$header.$payload.$signature"
           Write-Host $jwt
-          $accesstoken = Invoke-RestMethod -Method GET -Uri "https://api.github.com/app/installations" -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
+          $accesstoken = Invoke-RestMethod -Method GET -useBasicParsing -Uri "https://api.github.com/app/installations" -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
           Write-Host $accesstoken.length
           Write-Host $accesstoken
           
