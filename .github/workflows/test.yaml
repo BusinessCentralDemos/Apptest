@@ -42,6 +42,15 @@ jobs:
           $result = Invoke-RestMethod -Method GET -UseBasicParsing -Headers @{ "Authorization" = "bearer $ENV:ACTIONS_ID_TOKEN_REQUEST_TOKEN"; "Accept" = "application/vnd.github+json" } -Uri "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
           Parse-JWTToken($result.value) | Out-Host
 
-      - name: Get AccessToken from App
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: 1060271
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+  
+      - name: Use the token
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          Write-Host "Query federated token"
+          Write-Host "$ENV:GH_TOKEN".Length
