@@ -1,0 +1,47 @@
+name: Context
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+
+permissions:
+  contents: read
+  actions: write
+  id-token: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: ENV
+        run: |
+          Get-ChildItem env: | Out-Host
+
+      - name: Get ID-Token
+        run: |
+          function Parse-JWTtoken([string]$token) {
+            if ($token.Contains(".") -and $token.StartsWith("eyJ")) {
+              $tokenHeader = $token.Split(".")[0].Replace('-', '+').Replace('_', '/')
+              while ($tokenHeader.Length % 4) { $tokenHeader += "=" }
+              Write-Host ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($tokenHeader)) | ConvertFrom-Json)
+              $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
+              while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
+              return [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($tokenPayload)) | ConvertFrom-Json
+            }
+            throw "Invalid token"
+          }
+          Write-Host "Query federated token"
+          Write-Host "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
+          $result = Invoke-RestMethod -Method GET -UseBasicParsing -Headers @{ "Authorization" = "bearer $ENV:ACTIONS_ID_TOKEN_REQUEST_TOKEN"; "Accept" = "application/vnd.github+json" } -Uri "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
+          Parse-JWTToken($result.value) | Out-Host
+
+      - name: Get AccessToken from App
+        run: |
+          Write-Host "Query federated token"
