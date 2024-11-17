@@ -73,10 +73,11 @@ jobs:
           }))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
           $signature = pwsh -command {
             $rsa = [System.Security.Cryptography.RSA]::Create()
-            $rsa.ImportFromPem($args[1])
+            $privateKey = "$($args[1])"
+            $rsa.ImportFromPem($privateKey)
             $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes($args[0]), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
-            Write-OutPut "$header.$payload", $signature
-          } -args $privateKey
+            Write-OutPut $signature
+          } -args "$header.$payload", $privateKey
           $jwt = "$header.$payload.$signature"
           Write-Host $jwt
           $appinfo = Invoke-RestMethod -Method GET -useBasicParsing -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/installation" -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
