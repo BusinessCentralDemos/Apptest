@@ -71,16 +71,11 @@ jobs:
             exp = [System.DateTimeOffset]::UtcNow.AddMinutes(60).ToUnixTimeSeconds()
             iss = $clientId
           }))).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-          $rsa = [System.Security.Cryptography.RSA]::Create()
-          if ($PSVersionTable.PSVersion.Major -ge 7) {
-            $rsa.ImportFromPem($privateKey)
-          } else {
-            $base64 = $privateKey.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "").Replace("\n", "").Replace("\r", "")
-            $keyBytes = [Convert]::FromBase64String($base64)
-            $bytesRead = 0
-            rsa.ImportRSAPrivateKey($keyBytes, [ref] $bytesRead)
-          }
-          $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+          $signature = pwsh -command {
+            $rsa = [System.Security.Cryptography.RSA]::Create()
+            $rsa.ImportFromPem($args[0])
+            $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+          } -args $privateKey
           $jwt = "$header.$payload.$signature"
           Write-Host $jwt
           $appinfo = Invoke-RestMethod -Method GET -useBasicParsing -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/installation" -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
