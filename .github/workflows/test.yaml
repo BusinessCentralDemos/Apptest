@@ -78,6 +78,6 @@ jobs:
           Write-Host $jwt
           $appinfo = Invoke-RestMethod -Method GET -useBasicParsing -Uri "https://api.github.com/repos/$env:GITHUB_REPOSITORY/installation" -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
           $appInfo | Out-Host
-          $accesstokenUrl = $appInfo.access_token_url
+          $accesstokenUrl = $appInfo.access_tokens_url
           $tokenResponse = Invoke-RestMethod -Method POST -useBasicParsing -Uri $accesstokenUrl -Headers @{ "Accept" = "application/vnd.github+json"; "Authorization" = "Bearer $jwt"; "X-GitHub-Api-Version" = "2022-11-28" }
           $tokenResponse | Out-Host
