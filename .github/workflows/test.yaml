@@ -76,9 +76,9 @@ jobs:
             $rsa.ImportFromPem($privateKey)
           } else {
             $base64 = $privateKey.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "").Replace("\n", "").Replace("\r", "")
-            byte[] keyBytes = [Convert]::FromBase64String(base64)
+            byte[] $keyBytes = [Convert]::FromBase64String($base64)
             $bytesRead = 0
-            rsa.ImportRSAPrivateKey(keyBytes, out $bytesRead)
+            rsa.ImportRSAPrivateKey($keyBytes, out $bytesRead)
           }
           $signature = [Convert]::ToBase64String($rsa.SignData([System.Text.Encoding]::UTF8.GetBytes("$header.$payload"), [System.Security.Cryptography.HashAlgorithmName]::SHA256, [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
           $jwt = "$header.$payload.$signature"
