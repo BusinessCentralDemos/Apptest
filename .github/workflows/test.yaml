@@ -76,7 +76,7 @@ jobs:
             $rsa.ImportFromPem($privateKey)
           } else {
             $base64 = $privateKey.Replace("-----BEGIN RSA PRIVATE KEY-----", "").Replace("-----END RSA PRIVATE KEY-----", "").Replace("\n", "").Replace("\r", "")
-            byte[] $keyBytes = [Convert]::FromBase64String($base64)
+            $keyBytes = [Convert]::FromBase64String($base64)
             $bytesRead = 0
             rsa.ImportRSAPrivateKey($keyBytes, [ref] $bytesRead)
           }
