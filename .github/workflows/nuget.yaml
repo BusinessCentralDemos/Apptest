@@ -27,26 +27,30 @@ jobs:
       - name: Get ID-Token
         run: |
           $erroractionpreference = "stop"
-          $result = Invoke-RestMethod -Method GET -UseBasicParsing -Headers @{ "Authorization" = "bearer $ENV:ACTIONS_ID_TOKEN_REQUEST_TOKEN"; "Accept" = "application/vnd.github+json" } -Uri "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
+          $partnerTenantId = 'f97b6981-e782-49dd-9fd3-3e3753aece3b'
+          $partnerFeedUrl = 'https://pkgs.dev.azure.com/naverticapartners/AppSource%20Partners/_packaging/Test/nuget/v3/index.json'
+          # Query ID_TOKEN from GitHub
+          $idTokenResult = Invoke-RestMethod -Method GET -UseBasicParsing -Headers @{ "Authorization" = "bearer $ENV:ACTIONS_ID_TOKEN_REQUEST_TOKEN"; "Accept" = "application/vnd.github+json" } -Uri "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
           $body = @{
             "client_id" = "a26651f5-0e90-473c-b4f9-e96119aac8b8"
             "client_assertion_type" = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
-            "client_assertion" = $result.value
+            "client_assertion" = $idTokenResult.value
             "grant_type" =" client_credentials"
             "scope" = "499b84ac-1321-427f-aa17-267ca6975798/.default"
           }
-          $partnerTenantId = 'f97b6981-e782-49dd-9fd3-3e3753aece3b'
-          $partnerFeedUrl = 'https://pkgs.dev.azure.com/naverticapartners/AppSource%20Partners/_packaging/Test/nuget/v3/index.json'
-          $result2 = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri "https://login.microsoftonline.com/$partnerTenantId/oauth2/v2.0/token"
-          $accessToken = $result2.access_token
+          # Query Access Token from Azure AD
+          $accessTokenResult = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri "https://login.microsoftonline.com/$partnerTenantId/oauth2/v2.0/token"
+          $accessToken = $accessTokenResult.access_token
           # Mask access token in logs
           Write-Host "::mask::$accessToken"
           $headers = @{
             "Content-Type" = "application/json; charset=utf-8"
             "Authorization" = "Bearer $accessToken"
           }
+          # Query NuGet feed capabilities
           $capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $partnerFeedUrl
           $searchQueryServiceUrl = $capabilities.resources | Where-Object { $_.'@type' -eq 'SearchQueryService/3.0.0-beta' } | Select-Object -ExpandProperty '@id' | Select-Object -First 1
           $queryUrl = "$($searchQueryServiceUrl)?take=50"
+          # Query NuGet feed
           $searchResult = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $queryUrl
           $searchResult.data | Out-Host
