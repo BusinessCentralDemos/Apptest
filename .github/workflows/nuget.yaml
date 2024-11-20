@@ -52,6 +52,7 @@ jobs:
           $result2 = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri 'https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/token'
           $accessToken = $result2.access_token
           Write-Host "::mask::$accessToken"
+          $feedUrl = "https://pkgs.dev.azure.com/naverticapartners/4b8e2d9b-c781-458f-a13f-c7512610cff1/_packaging/Test/nuget/v3/index.json"
           $ENV:NUGET_AUTH_TOKEN = $accessToken
-          nuget sources add -Name "Kamil" -Source "https://pkgs.dev.azure.com/naverticapartners/4b8e2d9b-c781-458f-a13f-c7512610cff1/_packaging/Test/nuget/v3/index.json" -UserName "any" -Password $accesstoken
-          nuget list -Source "https://pkgs.dev.azure.com/naverticapartners/4b8e2d9b-c781-458f-a13f-c7512610cff1/_packaging/Test/nuget/v3/index.json"
+          nuget sources add -Name "Kamil" -Source $feedUrl -UserName "any" -Password $accesstoken
+          nuget list -Source $feedUrl -NonInteractive
