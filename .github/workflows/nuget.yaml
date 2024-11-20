@@ -63,7 +63,7 @@ jobs:
           $capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $feedUrl
           $searchQueryServiceUrl = $capabilities.resources | Where-Object { $_.'@type' -eq 'SearchQueryService/3.0.0-beta' } | Select-Object -ExpandProperty '@id' | Select-Object -First 1
           Write-Host $searchQueryServiceUrl
-          $queryUrl = "$searchQueryServiceUrl?take=50"
+          $queryUrl = "$($searchQueryServiceUrl)?take=50"
           Write-Host -ForegroundColor Yellow "Search package using $queryUrl"
           $searchResult = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $queryUrl
           $searchResult.data | Out-Host
