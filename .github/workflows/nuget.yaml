@@ -50,7 +50,7 @@ jobs:
             "scope" = "499b84ac-1321-427f-aa17-267ca6975798/.default"
           }
           $tenantId = '72f988bf-86f1-41af-91ab-2d7cd011db47'
-          #$tenantId = 'f97b6981-e782-49dd-9fd3-3e3753aece3b'
+          $tenantId = 'f97b6981-e782-49dd-9fd3-3e3753aece3b'
           $result2 = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
           $accessToken = $result2.access_token
           Write-Host "::mask::$accessToken"
