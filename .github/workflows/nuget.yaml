@@ -59,6 +59,7 @@ jobs:
             "Content-Type" = "application/json; charset=utf-8"
             "Authorization" = "Basic $([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("user:$accessToken")))"
           }
+          Write-Host "Use Url: $feedUrl"
           $capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $feedUrl
           $searchQueryServiceUrl = $capabilities.resources | Where-Object { $_.'@type' -eq 'SearchQueryService/3.0.0-beta' } | Select-Object -ExpandProperty '@id' | Select-Object -First 1
           Write-Host $searchQueryServiceUrl          
