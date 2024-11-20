@@ -57,7 +57,7 @@ jobs:
           $feedUrl = 'https://pkgs.dev.azure.com/naverticapartners/AppSource%20Partners/_packaging/Test/nuget/v3/index.json'
           $headers = @{
             "Content-Type" = "application/json; charset=utf-8"
-            "Authorization" = "Basic $([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("user:$accessToken")))"
+            "Authorization" = "Baerer $([Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("user:$accessToken")))"
           }
           Write-Host "Use Url: $feedUrl"
           $capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $feedUrl
