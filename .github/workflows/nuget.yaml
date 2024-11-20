@@ -47,7 +47,7 @@ jobs:
             "client_assertion_type" = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
             "client_assertion" = $result.value
             "grant_type" =" client_credentials"
-            "scope" = "499b84ac-1321-427f-aa17-267ca6975798/vso.packaging"
+            "scope" = "499b84ac-1321-427f-aa17-267ca6975798/.default"
           }
           $result2 = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri 'https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/token'
           $accessToken = $result2.access_token
