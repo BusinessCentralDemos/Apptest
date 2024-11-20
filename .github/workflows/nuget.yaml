@@ -37,7 +37,18 @@ jobs:
             }
             throw "Invalid token"
           }
+          $erroractionpreference = "stop"
           Write-Host "Query federated token"
           Write-Host "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
           $result = Invoke-RestMethod -Method GET -UseBasicParsing -Headers @{ "Authorization" = "bearer $ENV:ACTIONS_ID_TOKEN_REQUEST_TOKEN"; "Accept" = "application/vnd.github+json" } -Uri "$ENV:ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange"
           Parse-JWTToken($result.value) | Out-Host
+          $body = @{
+            "client_id" = "a26651f5-0e90-473c-b4f9-e96119aac8b8"
+            "client_assertion_type" = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+            "client_assertion" = $result.value
+            "grant_type" =" client_credentials"
+            "scope" = "499b84ac-1321-427f-aa17-267ca6975798/.default"
+          }
+          $result2 = Invoke-RestMethod -Method POST -Headers @{ "Content-Type" = "application/x-www-form-urlencoded" } -Body $body -UseBasicParsing -uri 'https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47/oauth2/v2.0/token'
+          Write-Host $result2.access_token.substring(10)
+
