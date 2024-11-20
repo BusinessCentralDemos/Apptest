@@ -43,14 +43,17 @@ jobs:
           $accessToken = $accessTokenResult.access_token
           # Mask access token in logs
           Write-Host "::mask::$accessToken"
-          $headers = @{
-            "Content-Type" = "application/json; charset=utf-8"
-            "Authorization" = "Bearer $accessToken"
-          }
-          # Query NuGet feed capabilities
-          $capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $partnerFeedUrl
-          $searchQueryServiceUrl = $capabilities.resources | Where-Object { $_.'@type' -eq 'SearchQueryService/3.0.0-beta' } | Select-Object -ExpandProperty '@id' | Select-Object -First 1
-          $queryUrl = "$($searchQueryServiceUrl)?take=50"
-          # Query NuGet feed
-          $searchResult = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $queryUrl
-          $searchResult.data | Out-Host
+          #$headers = @{
+          #  "Content-Type" = "application/json; charset=utf-8"
+          #  "Authorization" = "Bearer $accessToken"
+          #}
+          ## Query NuGet feed capabilities
+          #$capabilities = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $partnerFeedUrl
+          #$searchQueryServiceUrl = $capabilities.resources | Where-Object { $_.'@type' -eq 'SearchQueryService/3.0.0-beta' } | Select-Object -ExpandProperty '@id' | Select-Object -First 1
+          #$queryUrl = "$($searchQueryServiceUrl)?take=50"
+          ## Query NuGet feed
+          #$searchResult = Invoke-RestMethod -UseBasicParsing -Method GET -Headers $headers -Uri $queryUrl
+          #$searchResult.data | Out-Host
+          nuget sources add -Name "Kamil" -Source $partnerFeedUrl -UserName "any" -Password $accesstoken
+          nuget list -Source $partnerFeedUrl
+
